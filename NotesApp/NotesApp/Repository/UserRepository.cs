@@ -19,12 +19,12 @@ public class UserRepository : IUserRepository
         return userId;
     }
 
-    public void UpdateUser(int id, string login, string password)
+    public string UpdateUserLogin(int id, string login)
     {
         var user = TryGetUserByIdAndThrowIfNotFound(id);
         
         user.Login = login;
-        user.Password = password;
+        return login;
     }
 
     public void DeleteUser(int id)
@@ -36,6 +36,11 @@ public class UserRepository : IUserRepository
     public User? GetUserById(int id)
     {        
         return _users.FirstOrDefault(n => n.Id == id);
+    }
+
+    public User? GetUserByLogin(string login)
+    {
+        return _users.FirstOrDefault(n => n.Login.Equals(StringComparison.OrdinalIgnoreCase));
     }
 
     private User TryGetUserByIdAndThrowIfNotFound(int id)

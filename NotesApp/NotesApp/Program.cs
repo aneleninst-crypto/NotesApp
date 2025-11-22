@@ -11,8 +11,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 
-builder.Services.AddSingleton<IUserRepository, UserRepository>();
-builder.Services.AddSingleton<INoteRepository, NoteRepository>();
+builder.Services.AddUserRepository();
+builder.Services.AddNoteRepository();
 
 var app = builder.Build();
 
