@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NotesApp.Abstractions;
 using NotesApp.enams;
 using NotesApp.Exceptions;
 using NotesApp.Models;
@@ -10,63 +11,46 @@ namespace NotesApp.Controllers;
 
 public class NotesController : ControllerBase
 {
-    private static readonly List<Note> Notes = new();
-    
+    private readonly INoteRepository _noteRepository;
+    private readonly IUserRepository _userRepository;
+
+    public NotesController(INoteRepository noteRepository, IUserRepository userRepository)
+    {
+        _noteRepository = noteRepository;
+        _userRepository = userRepository;
+    }
     
     [HttpGet]
-    public ActionResult<List<Note>> GetAllNotes() => Ok(Notes);
+    public ActionResult<List<Note>> GetAllNotes() 
+        => Ok(_noteRepository.GetAllNote());
 
     [HttpPost]
-    public IActionResult CreateNote(string? title, string? description, int userId, PriorityOfExecution priority)
+    public ActionResult CreateNote(string? title, string? description, int userId, PriorityOfExecution priority)
     {
-        var newNote = new Note(Notes.Count+1, title, description, userId, priority );
-        Notes.Add(newNote);
-        return Ok("Note created!");
+        _userRepository.GetUserById(userId);
+
+        _noteRepository.CreateNote(title, description, userId, priority);
+
+        return Ok("Note created successfully");
     }
 
     [HttpPut]
-    public ActionResult<bool> ChangeNote(int noteId, string? title = null, PriorityOfExecution? priority = null, 
+    public ActionResult<bool> ChangeNote(int noteId, int userId,string? title = null, PriorityOfExecution? priority = null, 
         string? description = null)
     {
-        var note = Notes.SingleOrDefault(n => n.Id == noteId);
-
-        if (note == null)
-        {
-            return false;
-        }
-
-        if (title == null && description == null)
-        {
-            return false;
-        }
-
-        if (title is not null)
-        {
-            note.Title = title;
-        }
-
-        if (description is not null)
-        {
-            note.Description = description;
-        }
-
-        if (priority is not null)
-        {
-            note.Priority = priority.Value;
-        }
-
+        _userRepository.GetUserById(userId);
+        _noteRepository.ChangeNote(noteId, userId, title, priority, description);
         return Ok("Note changed!");
     }
 
     [HttpDelete]
     public ActionResult<bool> DeleteNote(int noteId)
     {
-        var note = Notes.SingleOrDefault(n => n.Id == noteId);
-        if (note == null)
+        _noteRepository.DeleteNote(noteId);
+
+        if (true)
         {
-            return false;
+            return Ok("Note deleted");
         }
-        Notes.Remove(note);
-        return Ok("Note deleted!");
     }
 }
