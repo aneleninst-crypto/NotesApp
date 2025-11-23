@@ -12,7 +12,7 @@ public class ExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is UserNotFoundException userNotFoundException)
+        if (exception is UserNotFoundExceptionId userNotFoundException)
         {
             httpContext.Response.ContentType = MediaTypeNames.Text.Plain;
             httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;

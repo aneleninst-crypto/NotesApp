@@ -1,3 +1,3 @@
 ﻿namespace NotesApp.Exceptions;
 
-public class UserNotFoundException(int id) : Exception($"Note with Id: {id}  not found");
+public class UserNotFoundExceptionId(int id) : Exception($"User with Id: {id}  not found");

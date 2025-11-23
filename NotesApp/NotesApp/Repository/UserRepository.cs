@@ -1,4 +1,6 @@
-﻿using NotesApp.Abstractions;
+﻿using AutoMapper;
+using NotesApp.Abstractions;
+using NotesApp.Contracts;
 using NotesApp.Exceptions;
 using NotesApp.Models;
 
@@ -7,10 +9,13 @@ namespace NotesApp.Repository;
 public class UserRepository : IUserRepository
 {
     private readonly List<User> _users = new ();
-    public List<User> GetAllUsers()
+    private readonly IMapper _mapper;
+    public UserRepository(IMapper mapper)
     {
-        return _users;
+        _mapper = mapper;
     }
+    public ListOfUsers GetAllUsers()
+    => _mapper.Map<ListOfUsers>(_users);
 
     public int CreateUser(string login, string password)
     {
@@ -33,14 +38,24 @@ public class UserRepository : IUserRepository
         _users.Remove(user);
     }
 
-    public User? GetUserById(int id)
+    public UserVm GetUserById(int id)
     {        
-        return _users.FirstOrDefault(n => n.Id == id);
+        var user = _users.FirstOrDefault(n => n.Id == id);
+        if (user is null)
+        {
+            throw new UserNotFoundExceptionId(id);
+        }
+        return _mapper.Map<UserVm>(user);
     }
 
-    public User? GetUserByLogin(string login)
+    public UserVm GetUserByLogin(string login)
     {
-        return _users.FirstOrDefault(n => n.Login.Equals(StringComparison.OrdinalIgnoreCase));
+        var user = _users.FirstOrDefault(n => n.Login == login);
+        if (user is null)
+        {
+            throw new UserNotFoundExceptionLogin(login);
+        }
+        return _mapper.Map<UserVm>(user);
     }
 
     private User TryGetUserByIdAndThrowIfNotFound(int id)
@@ -48,7 +63,7 @@ public class UserRepository : IUserRepository
         var user = _users.FirstOrDefault(n => n.Id == id);
         if (user == null)
         {
-            throw new UserNotFoundException(id);
+            throw new UserNotFoundExceptionId(id);
         }
         return user;
     }

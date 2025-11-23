@@ -1,4 +1,6 @@
-﻿using NotesApp.Abstractions;
+﻿using AutoMapper;
+using NotesApp.Abstractions;
+using NotesApp.Contracts;
 using NotesApp.enams;
 using NotesApp.Models;
 
@@ -7,19 +9,28 @@ namespace NotesApp.Repository;
 public class NoteRepository : INoteRepository
 {
     private readonly List<Note> _notes = new();
-    public List<Note> GetAllNote()
+    private readonly IMapper _mapper;
+
+    public NoteRepository(IMapper mapper)
     {
-        return _notes;
+        _mapper = mapper;
+    }
+    public ListOfNotes GetAllNote()
+    => _mapper.Map<ListOfNotes>(_notes);
+
+    public void CreateNote(CreateNoteDto createNoteDto)
+    {
+        var noteId = _notes.Count + 1;
+        // var note = new Note(noteId, createNoteDto.Title, createNoteDto.Description, createNoteDto.UserId, createNoteDto.Priority);
+        var note = _mapper.Map<Note>(createNoteDto); // не передаешь id 
+        note.Id = noteId;
+        _notes.Add(note);
     }
 
-    public void CreateNote(string? title, string? description, int userId, PriorityOfExecution priority)
+    public bool ChangeNote(int noteId, int userId, string? title = null, PriorityOfExecution? priority = null,
+        string? description = null)
     {
-        var newNote = new Note(_notes.Count+1, title, description, userId, priority );
-        _notes.Add(newNote);
-    }
-
-    public bool ChangeNote(int noteId, int userId, string? title = null, PriorityOfExecution? priority = null, string? description = null)
-    {
+        GetNotesByUserId(userId);
         var note = _notes.SingleOrDefault(n => n.Id == noteId);
 
         if (note == null)

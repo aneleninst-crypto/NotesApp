@@ -1,18 +1,11 @@
-using NotesApp.Abstractions;
-using NotesApp.Repository;
-using NotesApp.Services;
+using NotesApp.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddControllers();
-
-builder.Services.AddExceptionHandler<ExceptionHandler>();
-
-builder.Services.AddUserRepository();
-builder.Services.AddNoteRepository();
+builder.Services
+    .AddInfrastructure()
+    .AddSwagger()
+    .AddApplicationServices();
 
 var app = builder.Build();
 

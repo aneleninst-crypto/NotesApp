@@ -14,9 +14,9 @@ public class UserController : ControllerBase
 
     public UserController(IUserRepository userRepository)
         => _userRepository = userRepository;
-    
+
     [HttpGet]
-    public ActionResult<List<User>> GetAllUsers(string login)
+    public ActionResult<ListOfUsers> GetAllUsers()
     => Ok(_userRepository.GetAllUsers());
     
     [HttpGet("{id}")]
@@ -27,24 +27,21 @@ public class UserController : ControllerBase
     public ActionResult<UserVm> GetUser(string login)
     {
         var user = _userRepository.GetUserByLogin(login);
-        if (user == null)
+        if (user is null)
         {
             return NotFound(login);
         }
         return Ok(user);
     }
-    
+
     [HttpPost]
     public ActionResult<int> CreateUser(CreateUserDto dto)
-    {
-        var userId = _userRepository.CreateUser(dto.Login.Trim(), dto.Password.Trim());
-        return Ok(userId);
-    }
+        => Ok(_userRepository.CreateUser(dto.Password, dto.Login));
 
     [HttpPut("{id}")]
     public ActionResult UpdateUserLogin(int id, UpdateUserDto dto)
     {
-        var login = _userRepository.UpdateUserLogin(id, dto.Login.Trim());
+        var login = _userRepository.UpdateUserLogin(id, dto.Login);
         return Ok(login);
     }
 
