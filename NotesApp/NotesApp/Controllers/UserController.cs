@@ -23,7 +23,7 @@ public class UserController : ControllerBase
     public ActionResult<User?> GetUserById(int id)
     => Ok(_userRepository.GetUserById(id));
 
-    [HttpGet("{by_login}")]
+    [HttpGet("{by_login}")] // зачем тут {}? Что за переменную передаемв путь?
     public ActionResult<UserVm> GetUser(string login)
     {
         var user = _userRepository.GetUserByLogin(login);

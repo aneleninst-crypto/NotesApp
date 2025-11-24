@@ -21,5 +21,5 @@ public class UserMappingProfile : Profile
             .ForMember(dest => dest.Id,
                 opt => opt.Ignore());
     }
-    
+    // Пустая строчка
 }

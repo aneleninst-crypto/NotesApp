@@ -13,7 +13,10 @@ public class Note
     public int UserId  { get; set; }
     public PriorityOfExecution Priority { get; set; }
 
-    public Note(int id, string? title, string? description, int userId, PriorityOfExecution priority)
+    public Note(int id, string? title, string? description, int userId, PriorityOfExecution priority) // убери конструкторы, они тебе пока ни к чему.
+                                                                                                      // Ты создаешь сущности только в 1 месте своего приложения - репозитории
+                                                                                                      // при маппинге. А значит в теории нам конструктор (инструкция по созданию)
+                                                                                                      // не нужна. Как только понадобятся, ты поймешь и используешь.
     {
         Id = id;
         Title = title;

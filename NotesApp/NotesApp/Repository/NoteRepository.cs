@@ -21,16 +21,16 @@ public class NoteRepository : INoteRepository
     public void CreateNote(CreateNoteDto createNoteDto)
     {
         var noteId = _notes.Count + 1;
-        // var note = new Note(noteId, createNoteDto.Title, createNoteDto.Description, createNoteDto.UserId, createNoteDto.Priority);
-        var note = _mapper.Map<Note>(createNoteDto); // не передаешь id 
+        var note = _mapper.Map<Note>(createNoteDto); // не передаешь id, убрать конструктор
         note.Id = noteId;
         _notes.Add(note);
     }
 
     public bool ChangeNote(int noteId, int userId, string? title = null, PriorityOfExecution? priority = null,
-        string? description = null)
+        string? description = null) // будем принимать dto полноценную
     {
-        GetNotesByUserId(userId);
+        GetNotesByUserId(userId); // а почему мы не используем список этот, не запишем его в переменную? Зачем вообще две операции тут, поиска всех заметок пользователя (не используем к
+                                  // тому же, и потому поиск среди всех заметок, конкретной заметки по id. Вот код ниже можно было бы и вынести в отдельный метод, вместо твоего GetNotesByUserId
         var note = _notes.SingleOrDefault(n => n.Id == noteId);
 
         if (note == null)

@@ -28,7 +28,7 @@ public class NotesController : ControllerBase
     [HttpPost]
     public ActionResult<NoteVm> CreateNote(CreateNoteDto dto)
     {
-        _userRepository.GetUserById(dto.UserId);
+        _userRepository.GetUserById(dto.UserId); // ОЧЕНЬ СТРАННО, тут вызываем метод, чтобы проверить пользователя наличие или выкинуть исключение, допустим
         _noteRepository.CreateNote(dto);
         return Ok("Note created successfully");
     }
@@ -56,7 +56,7 @@ public class NotesController : ControllerBase
     [HttpPut]
     public ActionResult<bool> UpdateNoteDto(int id, UpdateNoteDto dto)
     {
-        var user = _userRepository.GetUserById(dto.UserId);
+        var user = _userRepository.GetUserById(dto.UserId); // ОЧЕНЬ СТРАННО, тут ешё раз проверяем, хотя метод уже проверяет. Явно запуталась в смысле вызова метода
         if (user is null)
         {
             throw new UserNotFoundExceptionId(dto.UserId);
