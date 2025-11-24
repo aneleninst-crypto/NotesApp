@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
-using NotesApp.enams;
-using NotesApp.Exceptions;
-using NotesApp.Models;
 
 namespace NotesApp.Controllers;
 
@@ -13,12 +10,10 @@ namespace NotesApp.Controllers;
 public class NotesController : ControllerBase
 {
     private readonly INoteRepository _noteRepository;
-    private readonly IUserRepository _userRepository;
 
-    public NotesController(INoteRepository noteRepository, IUserRepository userRepository)
+    public NotesController(INoteRepository noteRepository)
     {
         _noteRepository = noteRepository;
-        _userRepository = userRepository;
     }
 
     [HttpGet]
@@ -28,7 +23,6 @@ public class NotesController : ControllerBase
     [HttpPost]
     public ActionResult<NoteVm> CreateNote(CreateNoteDto dto)
     {
-        _userRepository.GetUserById(dto.UserId); // ОЧЕНЬ СТРАННО, тут вызываем метод, чтобы проверить пользователя наличие или выкинуть исключение, допустим
         _noteRepository.CreateNote(dto);
         return Ok("Note created successfully");
     }
@@ -54,19 +48,9 @@ public class NotesController : ControllerBase
     }
 
     [HttpPut]
-    public ActionResult<bool> UpdateNoteDto(int id, UpdateNoteDto dto)
+    public ActionResult<bool> UpdateNoteDto(UpdateNoteDto dto)
     {
-        var user = _userRepository.GetUserById(dto.UserId); // ОЧЕНЬ СТРАННО, тут ешё раз проверяем, хотя метод уже проверяет. Явно запуталась в смысле вызова метода
-        if (user is null)
-        {
-            throw new UserNotFoundExceptionId(dto.UserId);
-        }
-        var result = _noteRepository.ChangeNote(
-            id, 
-            dto.UserId, 
-            dto.Title.Trim(), 
-            dto.Priority, 
-            dto.Description.Trim());
+        var result = _noteRepository.UpdateNote(dto);
         if (!result)
         {
             return BadRequest("Failed to update note");

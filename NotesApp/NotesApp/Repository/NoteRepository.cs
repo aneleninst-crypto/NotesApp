@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
-using NotesApp.enams;
 using NotesApp.Models;
 
 namespace NotesApp.Repository;
@@ -21,42 +20,20 @@ public class NoteRepository : INoteRepository
     public void CreateNote(CreateNoteDto createNoteDto)
     {
         var noteId = _notes.Count + 1;
-        var note = _mapper.Map<Note>(createNoteDto); // не передаешь id, убрать конструктор
+        var note = _mapper.Map<Note>(createNoteDto);
         note.Id = noteId;
         _notes.Add(note);
     }
 
-    public bool ChangeNote(int noteId, int userId, string? title = null, PriorityOfExecution? priority = null,
-        string? description = null) // будем принимать dto полноценную
+    public bool UpdateNote (UpdateNoteDto updateNoteDto)
     {
-        GetNotesByUserId(userId); // а почему мы не используем список этот, не запишем его в переменную? Зачем вообще две операции тут, поиска всех заметок пользователя (не используем к
-                                  // тому же, и потому поиск среди всех заметок, конкретной заметки по id. Вот код ниже можно было бы и вынести в отдельный метод, вместо твоего GetNotesByUserId
-        var note = _notes.SingleOrDefault(n => n.Id == noteId);
+        var note = _notes.SingleOrDefault(n => n.Id == updateNoteDto.Id);
 
         if (note == null)
         {
             return false;
-        }
-
-        if (note.UserId != userId)
-        {
-            return false;
-        }
-        
-        if (title != null)
-        { 
-            note.Title = title;
-        }
-
-        if (description != null)
-        {
-            note.Description = description;
-        }
-
-        if (priority != null)
-        {
-            note.Priority = priority.Value;
-        }
+        } 
+        _mapper.Map(updateNoteDto, note);
         return true;
     }
 
@@ -70,10 +47,5 @@ public class NoteRepository : INoteRepository
         }
         _notes.Remove(note);
         return true;
-    }
-
-    public List<Note> GetNotesByUserId(int userId)
-    {
-        return _notes.Where(n => n.UserId == userId).ToList();
     }
 }

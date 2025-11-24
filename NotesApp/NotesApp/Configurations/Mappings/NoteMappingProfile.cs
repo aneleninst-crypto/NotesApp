@@ -13,15 +13,9 @@ public class NoteMappingProfile : Profile
         CreateMap<Note, NoteTitleViewModel>();
         CreateMap<Note, NoteDescriptionViewModel>();
         CreateMap<IEnumerable<Note>, ListOfNotes>()
-            .ForCtorParam(nameof(ListOfNotes.Notes),
-                opt => opt.MapFrom(notes =>
-                    notes.Select(n => new NoteListVm(
-                        n.Title, 
-                        n.Description, 
-                        n.Priority
-                        )).ToList()
-                    )
-                );
+            .ForCtorParam(nameof(ListOfNotes.Notes), 
+                opt => opt.MapFrom(
+                    src => src));
         CreateMap<CreateNoteDto, Note>()
             .ForMember(dest => dest.Id, 
                 opt => opt.Ignore());

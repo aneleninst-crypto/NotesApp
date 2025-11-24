@@ -17,19 +17,22 @@ public class UserRepository : IUserRepository
     public ListOfUsers GetAllUsers()
     => _mapper.Map<ListOfUsers>(_users);
 
-    public int CreateUser(string login, string password)
+    public int CreateUser(CreateUserDto dto)
     {
         var userId = _users.Count;
-        _users.Add(new User(userId, login, password));
+        var user = _mapper.Map<User>(dto);
+        user.Id = userId;
+        _users.Add(user);
+        
         return userId;
     }
 
-    public string UpdateUserLogin(int id, string login)
+    public string UpdateUserLogin(int id,UpdateUserDto dto)
     {
         var user = TryGetUserByIdAndThrowIfNotFound(id);
-        
-        user.Login = login;
-        return login;
+
+        user.Login = dto.Login;
+        return user.Login;
     }
 
     public void DeleteUser(int id)
@@ -53,7 +56,7 @@ public class UserRepository : IUserRepository
         var user = _users.FirstOrDefault(n => n.Login == login);
         if (user is null)
         {
-            throw new UserNotFoundExceptionLogin(login);
+            throw new UserNotFoundByLoginException(login);
         }
         return _mapper.Map<UserVm>(user);
     }

@@ -1,6 +1,7 @@
-﻿using NotesApp.Services;
+﻿using NotesApp.Extension;
+using NotesApp.Services;
 
-namespace NotesApp.Configurations; // пространство имен не то
+namespace NotesApp;
 
 public static class Composer
 {
