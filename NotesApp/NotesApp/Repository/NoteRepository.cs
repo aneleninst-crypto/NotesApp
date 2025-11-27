@@ -12,6 +12,7 @@ public class NoteRepository(
     ) : INoteRepository
 {
     private readonly IMapper _mapper = mapper;
+    // убрать строчки
     public ListOfNotes GetAllNote()
     => _mapper.Map<ListOfNotes>(dbContext.Notes.ToList());
 
@@ -24,7 +25,8 @@ public class NoteRepository(
 
     public bool UpdateNote (UpdateNoteDto updateNoteDto)
     {
-        var note = dbContext.Notes.SingleOrDefault(n => n.Id == updateNoteDto.Id);
+        var note = dbContext.Notes.SingleOrDefault(n => n.Id == updateNoteDto.Id); // вынести в отдельный метод, как у пользователя и создать кастомное исключение
+                                                                                   // + в ExHandlerMiddleware обработать
 
         if (note is null)
         {

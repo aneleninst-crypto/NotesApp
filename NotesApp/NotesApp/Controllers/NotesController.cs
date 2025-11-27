@@ -33,7 +33,7 @@ public class NotesController : ControllerBase
         var notes = _noteRepository.GetAllNote().Notes
             .Select(n => new NoteTitleViewModel(
                 n.Title))
-            .ToList();;
+            .ToList(); // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
         return Ok(notes);
     }
 
@@ -42,7 +42,7 @@ public class NotesController : ControllerBase
     {
         var notes = _noteRepository.GetAllNote().Notes
             .Select(n => new NoteDescriptionViewModel(
-                n.Description))
+                n.Description)) // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
             .ToList();
         return Ok(notes);
     }
@@ -63,7 +63,7 @@ public class NotesController : ControllerBase
     {
         _noteRepository.DeleteNote(noteId);
 
-        if (true)
+        if (true) // кажысь тебе всегда тут вылезет сообщение об удалении. Проверки явно нет.
         {
             return Ok("Note deleted");
         }

@@ -11,7 +11,8 @@ public class UserRepository(
     IMapper mapper,
     ApplicationDbContext dbContext) : IUserRepository
 {
-    private readonly IMapper _mapper = mapper;
+    private readonly IMapper _mapper = mapper; 
+    // убрать строчки
     public ListOfUsers GetAllUsers()
     => _mapper.Map<ListOfUsers>(dbContext.Users.ToList());
 
@@ -26,7 +27,7 @@ public class UserRepository(
     public string UpdateUserLogin(int id,UpdateUserDto dto)
     {
         var user = TryGetUserByIdAndThrowIfNotFound(id);
-
+            // зачем тут пустая строчка, если нигде их не делаешь между операциями. Хотя по хорошему разделять всё же операции по смыслу
         user.Login = dto.Login;
         dbContext.SaveChanges();
         return user.Login;
@@ -35,7 +36,7 @@ public class UserRepository(
     public void DeleteUser(int id)
     {
         var  user = TryGetUserByIdAndThrowIfNotFound(id);
-        dbContext.RemoveRange(dbContext.Notes.Where(n => n.UserId == id));
+        dbContext.RemoveRange(dbContext.Notes.Where(n => n.UserId == id)); // лишняя строчка, надо понять почему)
         dbContext.Remove(user);
         dbContext.SaveChanges();
     }

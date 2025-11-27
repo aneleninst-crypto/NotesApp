@@ -19,6 +19,7 @@ public class ExceptionHandler : IExceptionHandler
             await httpContext.Response.WriteAsync(userNotFoundException.Message);
             return true;
         }
+        // обработай остальные кастомные исключения так же.
         
         httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         await httpContext.Response.WriteAsync(string.Empty);

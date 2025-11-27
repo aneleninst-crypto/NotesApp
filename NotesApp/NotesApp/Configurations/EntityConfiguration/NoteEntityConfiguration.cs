@@ -4,7 +4,7 @@ using NotesApp.Models;
 
 namespace NotesApp.Configurations.EntityConfiguration;
 
-public class NoteEntityConfiguration : IEntityTypeConfiguration<Note>
+public class NoteEntityConfiguration : IEntityTypeConfiguration<Note> // я бы эти классы конфигурации перенес в папочку Database/EntityConfigurations но это вкусовщина.
 {
     public void Configure(EntityTypeBuilder<Note> builder)
     {
