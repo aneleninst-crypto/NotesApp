@@ -1,30 +1,26 @@
 ﻿using AutoMapper;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
+using NotesApp.Database;
 using NotesApp.Exceptions;
 using NotesApp.Models;
 
 namespace NotesApp.Repository;
 
-public class UserRepository : IUserRepository
+public class UserRepository(
+    IMapper mapper,
+    ApplicationDbContext dbContext) : IUserRepository
 {
-    private readonly List<User> _users = new ();
-    private readonly IMapper _mapper;
-    public UserRepository(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
+    private readonly IMapper _mapper = mapper;
     public ListOfUsers GetAllUsers()
-    => _mapper.Map<ListOfUsers>(_users);
+    => _mapper.Map<ListOfUsers>(dbContext.Users.ToList());
 
     public int CreateUser(CreateUserDto dto)
     {
-        var userId = _users.Count;
         var user = _mapper.Map<User>(dto);
-        user.Id = userId;
-        _users.Add(user);
-        
-        return userId;
+        dbContext.Add(user);
+        dbContext.SaveChanges();
+        return user.Id;
     }
 
     public string UpdateUserLogin(int id,UpdateUserDto dto)
@@ -32,28 +28,27 @@ public class UserRepository : IUserRepository
         var user = TryGetUserByIdAndThrowIfNotFound(id);
 
         user.Login = dto.Login;
+        dbContext.SaveChanges();
         return user.Login;
     }
 
     public void DeleteUser(int id)
     {
         var  user = TryGetUserByIdAndThrowIfNotFound(id);
-        _users.Remove(user);
+        dbContext.RemoveRange(dbContext.Notes.Where(n => n.UserId == id));
+        dbContext.Remove(user);
+        dbContext.SaveChanges();
     }
 
     public UserVm GetUserById(int id)
-    {        
-        var user = _users.FirstOrDefault(n => n.Id == id);
-        if (user is null)
-        {
-            throw new UserNotFoundExceptionId(id);
-        }
+    {
+        var user = TryGetUserByIdAndThrowIfNotFound(id);
         return _mapper.Map<UserVm>(user);
     }
 
     public UserVm GetUserByLogin(string login)
     {
-        var user = _users.FirstOrDefault(n => n.Login == login);
+        var user = dbContext.Users.FirstOrDefault(n => n.Login == login);
         if (user is null)
         {
             throw new UserNotFoundByLoginException(login);
@@ -63,8 +58,8 @@ public class UserRepository : IUserRepository
 
     private User TryGetUserByIdAndThrowIfNotFound(int id)
     {
-        var user = _users.FirstOrDefault(n => n.Id == id);
-        if (user == null)
+        var user = dbContext.Users.FirstOrDefault(n => n.Id == id);
+        if (user is null)
         {
             throw new UserNotFoundExceptionId(id);
         }

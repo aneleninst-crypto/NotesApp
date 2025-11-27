@@ -6,5 +6,5 @@ namespace NotesApp.Extension;
 public static class NoteRepositoryExtension
 {
     public static IServiceCollection AddNoteRepository(this IServiceCollection services)
-        => services.AddSingleton<INoteRepository, NoteRepository>();
+        => services.AddScoped<INoteRepository, NoteRepository>();
 }
