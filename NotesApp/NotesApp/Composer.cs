@@ -8,14 +8,17 @@ namespace NotesApp;
 public static class Composer
 {
     public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddAutoMapper(typeof(Composer).Assembly);
-        services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseNpgsql(
-                "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=notes");
-        });
+        services.AddOptions<ApplicationDbContextSettings>()
+            .Bind(configuration.GetRequiredSection(nameof(ApplicationDbContextSettings)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.Configure<ApplicationDbContextSettings>(
+            configuration.GetRequiredSection(nameof(ApplicationDbContextSettings)));
+        services.AddDbContext<ApplicationDbContext>();
         services.AddExceptionHandler<ExceptionHandler>();
         services.AddControllers();
         
