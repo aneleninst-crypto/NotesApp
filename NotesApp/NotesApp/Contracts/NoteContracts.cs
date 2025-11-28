@@ -1,4 +1,4 @@
-﻿using NotesApp.enams;
+﻿using NotesApp.Enums;
 
 namespace NotesApp.Contracts;
 

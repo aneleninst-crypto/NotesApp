@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NotesApp.Models;
 
-namespace NotesApp.Configurations.EntityConfiguration;
+namespace NotesApp.Database.Configurations.EntityConfiguration;
 
-public class NoteEntityConfiguration : IEntityTypeConfiguration<Note> // я бы эти классы конфигурации перенес в папочку Database/EntityConfigurations но это вкусовщина.
+public class NoteEntityConfiguration : IEntityTypeConfiguration<Note>
 {
     public void Configure(EntityTypeBuilder<Note> builder)
     {

@@ -1,7 +1,7 @@
 ﻿using NotesApp.Abstractions;
 using NotesApp.Repository;
 
-namespace NotesApp.Services; // namespace не тот + у папки бы название с окончанием s сделать.
+namespace NotesApp.Extensions;
 
 public static class UserRepositoryExtension
 {

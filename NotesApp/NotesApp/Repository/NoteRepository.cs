@@ -2,6 +2,7 @@
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
 using NotesApp.Database;
+using NotesApp.Exceptions;
 using NotesApp.Models;
 
 namespace NotesApp.Repository;
@@ -11,42 +12,40 @@ public class NoteRepository(
     ApplicationDbContext dbContext
     ) : INoteRepository
 {
-    private readonly IMapper _mapper = mapper;
-    // убрать строчки
     public ListOfNotes GetAllNote()
-    => _mapper.Map<ListOfNotes>(dbContext.Notes.ToList());
+    => mapper.Map<ListOfNotes>(dbContext.Notes.ToList());
 
-    public void CreateNote(CreateNoteDto createNoteDto)
+    public int CreateNote(CreateNoteDto createNoteDto)
     {
-        var note = _mapper.Map<Note>(createNoteDto);
+        var note = mapper.Map<Note>(createNoteDto);
         dbContext.Notes.Add(note);
         dbContext.SaveChanges();
+        return note.Id;
     }
 
-    public bool UpdateNote (UpdateNoteDto updateNoteDto)
+    public bool UpdateNote (int noteId, UpdateNoteDto updateNoteDto)
     {
-        var note = dbContext.Notes.SingleOrDefault(n => n.Id == updateNoteDto.Id); // вынести в отдельный метод, как у пользователя и создать кастомное исключение
-                                                                                   // + в ExHandlerMiddleware обработать
-
-        if (note is null)
-        {
-            return false;
-        } 
-        _mapper.Map(updateNoteDto, note);
+        var note = TryGetNoteByIdAndThrowIfNotFound(noteId);
+        mapper.Map(updateNoteDto, note);
         dbContext.SaveChanges();
         return true;
     }
 
     public bool DeleteNote(int noteId)
     {
-        var note = dbContext.Notes.SingleOrDefault(n => n.Id == noteId);
-        if (note is null)
-        {
-            
-            return false;
-        }
+        var note = TryGetNoteByIdAndThrowIfNotFound(noteId);
         dbContext.Notes.Remove(note);
         dbContext.SaveChanges();
         return true;
+    }
+
+    private Note TryGetNoteByIdAndThrowIfNotFound(int noteId)
+    {
+        var note = dbContext.Notes.FirstOrDefault(n => n.Id == noteId);
+        if (note is null)
+        {
+            throw new NoteNotFoundException(noteId);
+        }
+        return note;
     }
 }

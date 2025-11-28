@@ -1,5 +1,4 @@
 using NotesApp;
-using NotesApp.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 

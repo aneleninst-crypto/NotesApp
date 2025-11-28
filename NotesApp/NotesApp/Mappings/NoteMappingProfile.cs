@@ -2,7 +2,7 @@
 using NotesApp.Contracts;
 using NotesApp.Models;
 
-namespace NotesApp.Configurations.Mappings;
+namespace NotesApp.Mappings;
 
 public class NoteMappingProfile : Profile
 {

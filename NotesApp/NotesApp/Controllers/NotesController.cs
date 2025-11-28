@@ -48,9 +48,9 @@ public class NotesController : ControllerBase
     }
 
     [HttpPut]
-    public ActionResult<bool> UpdateNoteDto(UpdateNoteDto dto)
+    public ActionResult<bool> UpdateNoteDto(int noteId, UpdateNoteDto dto)
     {
-        var result = _noteRepository.UpdateNote(dto);
+        var result = _noteRepository.UpdateNote(noteId, dto);
         if (!result)
         {
             return BadRequest("Failed to update note");
@@ -61,11 +61,12 @@ public class NotesController : ControllerBase
     [HttpDelete]
     public ActionResult<bool> DeleteNote(int noteId)
     {
-        _noteRepository.DeleteNote(noteId);
+        var result = _noteRepository.DeleteNote(noteId);
 
-        if (true) // кажысь тебе всегда тут вылезет сообщение об удалении. Проверки явно нет.
+        if (!result)
         {
-            return Ok("Note deleted");
+            return NotFound("Note not found");
         }
+        return Ok("Note deleted");
     }
 }

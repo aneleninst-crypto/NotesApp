@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Database;
+﻿using NotesApp.Database;
 using NotesApp.Extension;
-using NotesApp.Services;
+using NotesApp.Extensions;
 
 namespace NotesApp;
 

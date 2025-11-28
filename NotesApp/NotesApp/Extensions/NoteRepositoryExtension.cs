@@ -1,7 +1,7 @@
 ﻿using NotesApp.Abstractions;
 using NotesApp.Repository;
 
-namespace NotesApp.Extension;
+namespace NotesApp.Extensions;
 
 public static class NoteRepositoryExtension
 {

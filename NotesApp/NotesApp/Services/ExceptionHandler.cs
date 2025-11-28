@@ -3,7 +3,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Diagnostics;
 using NotesApp.Exceptions;
 
-namespace NotesApp.Services;
+namespace NotesApp.Extension;
 
 public class ExceptionHandler : IExceptionHandler
 {
@@ -19,7 +19,22 @@ public class ExceptionHandler : IExceptionHandler
             await httpContext.Response.WriteAsync(userNotFoundException.Message);
             return true;
         }
-        // обработай остальные кастомные исключения так же.
+        
+        if (exception is UserNotFoundByLoginException userNotFoundByLoginException)
+        {
+            httpContext.Response.ContentType = MediaTypeNames.Text.Plain;
+            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            await httpContext.Response.WriteAsync(userNotFoundByLoginException.Message);
+            return true;
+        }
+
+        if (exception is NoteNotFoundException noteNotFoundException)
+        {
+            httpContext.Response.ContentType = MediaTypeNames.Text.Plain;
+            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            await httpContext.Response.WriteAsync(noteNotFoundException.Message);
+            return true;
+        }
         
         httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         await httpContext.Response.WriteAsync(string.Empty);

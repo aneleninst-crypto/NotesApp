@@ -27,11 +27,6 @@ public class UserController : ControllerBase
     public ActionResult<UserVm> GetUser(string login)
     {
         var user = _userRepository.GetUserByLogin(login);
-        if (user is null) // всегда будет false, потому что не может быть null результат метода репозитория GetUserByLogin
-                          // тем более в самом методы ты уже бросаешь исключение. Зачем тут эта проверка
-        {
-            return NotFound(login);
-        }
         return Ok(user);
     }
 

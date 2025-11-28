@@ -1,4 +1,4 @@
-﻿namespace NotesApp.enams;
+﻿namespace NotesApp.Enums;
 
 public enum PriorityOfExecution
 {
