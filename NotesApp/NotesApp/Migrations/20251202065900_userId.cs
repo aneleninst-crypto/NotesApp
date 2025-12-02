@@ -5,7 +5,7 @@
 namespace NotesApp.Migrations
 {
     /// <inheritdoc />
-    public partial class AddConstraints : Migration
+    public partial class userId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

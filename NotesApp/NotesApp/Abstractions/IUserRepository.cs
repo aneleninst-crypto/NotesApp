@@ -5,9 +5,8 @@ namespace NotesApp.Abstractions;
 public interface IUserRepository
 {
     public ListOfUsers GetAllUsers();
-    public int CreateUser(CreateUserDto dto);
-    public string UpdateUserLogin(int id, UpdateUserDto dto);
-    public void DeleteUser(int id);
-    public UserVm GetUserById(int id);
+    public string UpdateUserLogin(Guid id, UpdateUserDto dto);
+    public void DeleteUser(Guid id);
+    public UserVm GetUserById(Guid id);
     public UserVm GetUserByLogin(string login);
 }

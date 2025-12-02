@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using NotesApp.Contracts;
+using NotesApp.Contracts.NoteContracts;
 using NotesApp.Models;
 
 namespace NotesApp.Mappings;

@@ -1,36 +1,38 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
-using NotesApp.Contracts;
+using NotesApp.Contracts.NoteContracts;
+using NotesApp.Extensions;
 
 namespace NotesApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 
-public class NotesController : ControllerBase
+public class NotesController(INoteRepository noteRepository) : BaseController
 {
-    private readonly INoteRepository _noteRepository;
-
-    public NotesController(INoteRepository noteRepository)
-    {
-        _noteRepository = noteRepository;
-    }
 
     [HttpGet]
     public ActionResult<ListOfNotes> GetAllNotes()
-        => Ok(_noteRepository.GetAllNote());
+    {
+        var notes = noteRepository.GetAllNote();
+        return Ok(notes);
+    }
 
     [HttpPost]
-    public ActionResult<NoteVm> CreateNote(CreateNoteDto dto)
+    public ActionResult<NoteVm> CreateNote([FromBody] CreateNoteDto dto)
     {
-        _noteRepository.CreateNote(dto);
-        return Ok("Note created successfully");
+        var userId = HttpContext.ExtractUserIdFromClaims();
+        if (userId is null)
+            return Unauthorized();
+        var note = noteRepository.CreateNote(dto, userId.Value);
+        return Ok(note);
     }
 
     [HttpGet("title")]
     public ActionResult<List<NoteTitleViewModel>> GetNoteTitle()
     {
-        var notes = _noteRepository.GetAllNote().Notes
+        var notes = noteRepository.GetAllNote().Notes
             .Select(n => new NoteTitleViewModel(
                 n.Title))
             .ToList(); // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
@@ -40,7 +42,7 @@ public class NotesController : ControllerBase
     [HttpGet("description")]
     public ActionResult<List<NoteDescriptionViewModel>> GetNoteDescription()
     {
-        var notes = _noteRepository.GetAllNote().Notes
+        var notes = noteRepository.GetAllNote().Notes
             .Select(n => new NoteDescriptionViewModel(
                 n.Description)) // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
             .ToList();
@@ -50,23 +52,22 @@ public class NotesController : ControllerBase
     [HttpPut]
     public ActionResult<bool> UpdateNoteDto(int noteId, UpdateNoteDto dto)
     {
-        var result = _noteRepository.UpdateNote(noteId, dto);
+        var result = noteRepository.UpdateNote(noteId, dto);
         if (!result)
         {
             return BadRequest("Failed to update note");
         }
         return Ok("Note changed!");
     }
-
-    [HttpDelete]
-    public ActionResult<bool> DeleteNote(int noteId)
+    
+    [Authorize(Policy = "NotesOwner")]
+    [HttpDelete("{id:int}")]
+    public ActionResult<bool> DeleteNote(int id)
     {
-        var result = _noteRepository.DeleteNote(noteId);
-
-        if (!result)
-        {
-            return NotFound("Note not found");
-        }
-        return Ok("Note deleted");
+        var userId = HttpContext.ExtractUserIdFromClaims();
+        if (userId is null)
+            return Unauthorized();
+        noteRepository.DeleteNote(id, userId);
+        return NoContent();
     }
 }

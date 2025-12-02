@@ -3,7 +3,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Diagnostics;
 using NotesApp.Exceptions;
 
-namespace NotesApp.Extension;
+namespace NotesApp.Services;
 
 public class ExceptionHandler : IExceptionHandler
 {

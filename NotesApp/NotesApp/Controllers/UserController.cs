@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
 using NotesApp.Models;
@@ -8,43 +9,71 @@ namespace NotesApp.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 
-public class UserController : ControllerBase
+public class UserController(IAuthService authService, IUserRepository userRepository) : BaseController
 {
-    private readonly IUserRepository _userRepository;
 
-    public UserController(IUserRepository userRepository)
-        => _userRepository = userRepository;
+    [AllowAnonymous]
+    [HttpPost("signup")]
+    public ActionResult<LogInResponse> SignUp([FromBody] CreateUserDto dto)
+    {
+        var token = authService.SignUp(dto);
+        return Ok(token);
+    }
 
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public ActionResult<LogInResponse> LogIn([FromBody] LogInDto dto)
+    {
+        var result = authService.LogIn(dto);
+        if (result is null)
+            return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    public ActionResult<bool> LogOut([FromBody] Guid userId)
+    {
+        var result = authService.LogOut(userId);
+        if (!result)
+            return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPost("refresh")]
+    public ActionResult<LogInResponse> Refresh([FromBody] string refreshToken)
+    {
+        var result = authService.Refresh(refreshToken);
+        if (result is null)
+            return NotFound();
+        return Ok(result);
+    }
+    
     [HttpGet]
     public ActionResult<ListOfUsers> GetAllUsers()
-    => Ok(_userRepository.GetAllUsers());
+    => Ok(userRepository.GetAllUsers());
     
     [HttpGet("{id}")]
-    public ActionResult<User?> GetUserById(int id)
-    => Ok(_userRepository.GetUserById(id));
+    public ActionResult<User?> GetUserById(Guid id)
+    => Ok(userRepository.GetUserById(id));
 
     [HttpGet("by_login")]
     public ActionResult<UserVm> GetUser(string login)
     {
-        var user = _userRepository.GetUserByLogin(login);
+        var user = userRepository.GetUserByLogin(login);
         return Ok(user);
     }
-
-    [HttpPost]
-    public ActionResult<int> CreateUser(CreateUserDto dto)
-        => Ok(_userRepository.CreateUser(dto));
-
+    
     [HttpPut("{id}")]
-    public ActionResult UpdateUserLogin(int id, UpdateUserDto dto)
+    public ActionResult UpdateUserLogin(Guid id, UpdateUserDto dto)
     {
-        var login = _userRepository.UpdateUserLogin(id, dto);
+        var login = userRepository.UpdateUserLogin(id, dto);
         return Ok(login);
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteUser(int id)
+    public ActionResult DeleteUser(Guid id)
     {
-        _userRepository.DeleteUser(id);
+        userRepository.DeleteUser(id);
         return NoContent();
     }
 }

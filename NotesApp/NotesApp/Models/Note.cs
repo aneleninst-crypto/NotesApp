@@ -10,7 +10,7 @@ public class Note
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime EditDate { get; set; } = DateTime.UtcNow;
     public bool IsCompleted { get; set; } = false;
-    public int UserId  { get; set; }
     public PriorityOfExecution Priority { get; set; }
+    public Guid UserId { get; set; }
     public User User { get; set; }
 }

@@ -14,15 +14,7 @@ public class UserRepository(
     public ListOfUsers GetAllUsers()
     => mapper.Map<ListOfUsers>(dbContext.Users.ToList());
 
-    public int CreateUser(CreateUserDto dto)
-    {
-        var user = mapper.Map<User>(dto);
-        dbContext.Add(user);
-        dbContext.SaveChanges();
-        return user.Id;
-    }
-
-    public string UpdateUserLogin(int id,UpdateUserDto dto)
+    public string UpdateUserLogin(Guid id,UpdateUserDto dto)
     {
         var user = TryGetUserByIdAndThrowIfNotFound(id);
         user.Login = dto.Login;
@@ -30,14 +22,14 @@ public class UserRepository(
         return user.Login;
     }
 
-    public void DeleteUser(int id)
+    public void DeleteUser(Guid id)
     {
         var  user = TryGetUserByIdAndThrowIfNotFound(id);
         dbContext.Remove(user);
         dbContext.SaveChanges();
     }
 
-    public UserVm GetUserById(int id)
+    public UserVm GetUserById(Guid id)
     {
         var user = TryGetUserByIdAndThrowIfNotFound(id);
         return mapper.Map<UserVm>(user);
@@ -53,7 +45,7 @@ public class UserRepository(
         return mapper.Map<UserVm>(user);
     }
 
-    private User TryGetUserByIdAndThrowIfNotFound(int id)
+    private User TryGetUserByIdAndThrowIfNotFound(Guid id)
     {
         var user = dbContext.Users.FirstOrDefault(n => n.Id == id);
         if (user is null)

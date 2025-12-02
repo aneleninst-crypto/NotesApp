@@ -1,6 +1,15 @@
-﻿using NotesApp.Database;
-using NotesApp.Extension;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using NotesApp.Abstractions;
+using NotesApp.Database;
+using NotesApp.Database.Configurations;
 using NotesApp.Extensions;
+using NotesApp.Politics;
+using NotesApp.Services;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NotesApp;
 
@@ -37,6 +46,81 @@ public static class Composer
     {
         services.AddUserRepository();
         services.AddNoteRepository();
+        services.AddScoped<IAuthService, AuthService>();
+        
+        return services;
+    }
+
+    public static IServiceCollection AddCustomAuthorization(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services
+            .AddSwaggerGen()
+            .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                var jwtOptions = configuration
+                    .GetRequiredSection(nameof(JwtOptions))
+                    .Get<JwtOptions>()!;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new
+                        SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.Secret))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var authService =
+                            context.HttpContext
+                                .RequestServices
+                                .GetRequiredService<IAuthService>();
+
+                        var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (
+                            userId is null
+                            || context.SecurityToken.ValidTo < DateTime.UtcNow
+                            || !authService.VerifyToken(Guid.Parse(userId),
+                                context.SecurityToken.UnsafeToString()))
+                        {
+                            context.Fail("Unauthorized");
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+        services.AddScoped<IAuthorizationHandler, PostOwnerRequirementHandler>();
+        services.AddHttpContextAccessor();
+        services.AddAuthorization(options =>
+        {
+            var defaultAuthorizationPolicyBuilder = 
+                new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme);
+            defaultAuthorizationPolicyBuilder.RequireAuthenticatedUser();
+            options.DefaultPolicy = defaultAuthorizationPolicyBuilder.Build();
+            
+            options.AddPolicy("NotesOwner", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AddRequirements(new PostOwnerRequirement());
+            });
+        });
+        
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetRequiredSection(nameof(JwtOptions)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        services.AddTransient<IJwtTokenGenerator,  JwtTokenGenerator>();
         
         return services;
     }

@@ -19,7 +19,6 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasMany(u => u.Notes)
             .WithOne(n => n.User)
-            .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using NotesApp.Abstractions;
-using NotesApp.Contracts;
+using NotesApp.Contracts.NoteContracts;
 using NotesApp.Database;
 using NotesApp.Exceptions;
 using NotesApp.Models;
@@ -15,9 +15,9 @@ public class NoteRepository(
     public ListOfNotes GetAllNote()
     => mapper.Map<ListOfNotes>(dbContext.Notes.ToList());
 
-    public int CreateNote(CreateNoteDto createNoteDto)
+    public int CreateNote(CreateNoteDto createNoteDto,  Guid userId)
     {
-        var note = mapper.Map<Note>(createNoteDto);
+        var note = createNoteDto.ToNote(userId);
         dbContext.Notes.Add(note);
         dbContext.SaveChanges();
         return note.Id;
@@ -31,7 +31,7 @@ public class NoteRepository(
         return true;
     }
 
-    public bool DeleteNote(int noteId)
+    public bool DeleteNote(int noteId,  Guid? userId)
     {
         var note = TryGetNoteByIdAndThrowIfNotFound(noteId);
         dbContext.Notes.Remove(note);
