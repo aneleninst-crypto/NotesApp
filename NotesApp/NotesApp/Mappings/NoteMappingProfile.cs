@@ -10,8 +10,6 @@ public class NoteMappingProfile : Profile
     {
         CreateMap<Note, NoteVm>();
         CreateMap<Note, NoteListVm>();
-        CreateMap<Note, NoteTitleViewModel>();
-        CreateMap<Note, NoteDescriptionViewModel>();
         CreateMap<IEnumerable<Note>, ListOfNotes>()
             .ForCtorParam(nameof(ListOfNotes.Notes), 
                 opt => opt.MapFrom(

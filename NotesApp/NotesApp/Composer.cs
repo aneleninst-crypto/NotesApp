@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -28,7 +30,16 @@ public static class Composer
             configuration.GetRequiredSection(nameof(ApplicationDbContextSettings)));
         services.AddDbContext<ApplicationDbContext>();
         services.AddExceptionHandler<ExceptionHandler>();
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
+        services.AddHealthChecks()
+            .AddDbContextCheck<ApplicationDbContext>();
         
         return services;
     }

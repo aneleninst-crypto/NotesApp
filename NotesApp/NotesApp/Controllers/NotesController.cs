@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
 using NotesApp.Contracts.NoteContracts;
+using NotesApp.Enums;
 using NotesApp.Extensions;
 
 namespace NotesApp.Controllers;
@@ -13,9 +14,13 @@ public class NotesController(INoteRepository noteRepository) : BaseController
 {
 
     [HttpGet]
-    public ActionResult<ListOfNotes> GetAllNotes()
+    public ActionResult<ListOfNotes> GetAllNotes(bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
+        string? title, SortNotesBy? sortNotesBy)
     {
-        var notes = noteRepository.GetAllNote();
+        var userId = HttpContext.ExtractUserIdFromClaims();
+        if (userId is null)
+            return Unauthorized();
+        var notes = noteRepository.GetAllNote(userId, isCompleted, priorityOfExecution, title, sortNotesBy);
         return Ok(notes);
     }
 
@@ -27,26 +32,6 @@ public class NotesController(INoteRepository noteRepository) : BaseController
             return Unauthorized();
         var note = noteRepository.CreateNote(dto, userId.Value);
         return Ok(note);
-    }
-
-    [HttpGet("title")]
-    public ActionResult<List<NoteTitleViewModel>> GetNoteTitle()
-    {
-        var notes = noteRepository.GetAllNote().Notes
-            .Select(n => new NoteTitleViewModel(
-                n.Title))
-            .ToList(); // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
-        return Ok(notes);
-    }
-
-    [HttpGet("description")]
-    public ActionResult<List<NoteDescriptionViewModel>> GetNoteDescription()
-    {
-        var notes = noteRepository.GetAllNote().Notes
-            .Select(n => new NoteDescriptionViewModel(
-                n.Description)) // не используешь автомаппинг почему-то тут, единообразие важно, если это не сильно заебно
-            .ToList();
-        return Ok(notes);
     }
 
     [HttpPut]

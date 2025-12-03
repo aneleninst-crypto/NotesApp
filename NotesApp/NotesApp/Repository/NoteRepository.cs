@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.Net.Http.Headers;
 using NotesApp.Abstractions;
 using NotesApp.Contracts.NoteContracts;
 using NotesApp.Database;
+using NotesApp.Enums;
 using NotesApp.Exceptions;
 using NotesApp.Models;
 
@@ -12,8 +14,42 @@ public class NoteRepository(
     ApplicationDbContext dbContext
     ) : INoteRepository
 {
-    public ListOfNotes GetAllNote()
-    => mapper.Map<ListOfNotes>(dbContext.Notes.ToList());
+    public ListOfNotes GetAllNote(Guid? userId, bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
+        string? title, SortNotesBy? sortNotesBy)
+    {
+        IEnumerable<Note> notes = dbContext.Notes.Where(n => n.UserId == userId);
+        
+        if (isCompleted.HasValue)
+            notes = notes.Where(n => n.IsCompleted == isCompleted);
+        
+        if (priorityOfExecution.HasValue)
+            notes = notes.Where(n => n.Priority == priorityOfExecution);
+        
+        if (!string.IsNullOrWhiteSpace(title))
+            notes = notes.Where(n => n.Title.Contains(title));
+
+        notes = sortNotesBy switch
+        {
+            SortNotesBy.TitleByAscending => notes.OrderBy(n => n.Title),
+            SortNotesBy.TitleByDescending => notes.OrderByDescending(n => n.Title),
+
+            SortNotesBy.CreatedByAscending => notes.OrderBy(n => n.Created),
+            SortNotesBy.CreatedByDescending => notes.OrderByDescending(n => n.Created),
+
+            SortNotesBy.EditDateByAscending => notes.OrderBy(n => n.EditDate),
+            SortNotesBy.EditDateByDescending => notes.OrderByDescending(n => n.EditDate),
+
+            SortNotesBy.IsCompletedByAscending => notes.OrderBy(n => n.IsCompleted),
+            SortNotesBy.IsCompletedByDescending => notes.OrderByDescending(n => n.IsCompleted),
+
+            SortNotesBy.PriorityByAscending => notes.OrderBy(n => n.Priority),
+            SortNotesBy.PriorityByDescending => notes.OrderByDescending(n => n.Description),
+            
+            _ => notes
+        };
+        
+       return mapper.Map<ListOfNotes>(notes);
+    }
 
     public int CreateNote(CreateNoteDto createNoteDto,  Guid userId)
     {
