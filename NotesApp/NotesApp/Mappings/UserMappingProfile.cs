@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using NotesApp.Contracts;
+using NotesApp.Contracts.UserContracts;
 using NotesApp.Models;
 
 namespace NotesApp.Mappings;

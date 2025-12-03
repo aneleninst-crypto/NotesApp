@@ -17,9 +17,7 @@ public class NotesController(INoteRepository noteRepository) : BaseController
     public ActionResult<ListOfNotes> GetAllNotes(bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
         string? title, SortNotesBy? sortNotesBy)
     {
-        var userId = HttpContext.ExtractUserIdFromClaims();
-        if (userId is null)
-            return Unauthorized();
+        var userId = GetUserId();
         var notes = noteRepository.GetAllNote(userId, isCompleted, priorityOfExecution, title, sortNotesBy);
         return Ok(notes);
     }
@@ -27,10 +25,8 @@ public class NotesController(INoteRepository noteRepository) : BaseController
     [HttpPost]
     public ActionResult<NoteVm> CreateNote([FromBody] CreateNoteDto dto)
     {
-        var userId = HttpContext.ExtractUserIdFromClaims();
-        if (userId is null)
-            return Unauthorized();
-        var note = noteRepository.CreateNote(dto, userId.Value);
+        var userId = GetUserId();
+        var note = noteRepository.CreateNote(dto, userId!.Value);
         return Ok(note);
     }
 
@@ -49,10 +45,16 @@ public class NotesController(INoteRepository noteRepository) : BaseController
     [HttpDelete("{id:int}")]
     public ActionResult<bool> DeleteNote(int id)
     {
-        var userId = HttpContext.ExtractUserIdFromClaims();
-        if (userId is null)
-            return Unauthorized();
+        var userId = GetUserId();
         noteRepository.DeleteNote(id, userId);
         return NoContent();
+    }
+
+    private Guid? GetUserId()
+    {
+        var userId = HttpContext.ExtractUserIdFromClaims();
+        if (userId is null)
+            throw new UnauthorizedAccessException();
+        return userId;
     }
 }

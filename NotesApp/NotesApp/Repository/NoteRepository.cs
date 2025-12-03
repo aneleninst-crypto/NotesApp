@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Net.Http.Headers;
 using NotesApp.Abstractions;
 using NotesApp.Contracts.NoteContracts;
 using NotesApp.Database;

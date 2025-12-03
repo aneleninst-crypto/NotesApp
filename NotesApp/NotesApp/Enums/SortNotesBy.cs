@@ -2,14 +2,14 @@
 
 public enum SortNotesBy
 {
-    TitleByAscending,
-    TitleByDescending,
-    IsCompletedByAscending,
-    IsCompletedByDescending,
-    CreatedByAscending,
-    CreatedByDescending,
-    EditDateByAscending,
-    EditDateByDescending,
-    PriorityByAscending,
-    PriorityByDescending
+    TitleByAscending = 1,
+    TitleByDescending = 2,
+    IsCompletedByAscending = 3,
+    IsCompletedByDescending = 4,
+    CreatedByAscending = 5,
+    CreatedByDescending = 6,
+    EditDateByAscending = 7,
+    EditDateByDescending = 8,
+    PriorityByAscending = 9,
+    PriorityByDescending = 10
 }

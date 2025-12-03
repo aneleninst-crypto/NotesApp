@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
+using NotesApp.Contracts.AuthContracts;
+using NotesApp.Contracts.UserContracts;
 using NotesApp.Database;
 using NotesApp.Models;
 

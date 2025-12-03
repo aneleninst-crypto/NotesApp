@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
+using NotesApp.Contracts.UserContracts;
 using NotesApp.Database;
 using NotesApp.Exceptions;
 using NotesApp.Models;

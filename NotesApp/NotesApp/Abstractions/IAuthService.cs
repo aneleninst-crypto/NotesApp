@@ -1,4 +1,5 @@
-﻿using NotesApp.Contracts;
+﻿using NotesApp.Contracts.AuthContracts;
+using NotesApp.Contracts.UserContracts;
 
 namespace NotesApp.Abstractions;
 

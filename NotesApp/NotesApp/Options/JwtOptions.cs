@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NotesApp.Database.Configurations;
+namespace NotesApp.Options;
 
 public class JwtOptions
 {

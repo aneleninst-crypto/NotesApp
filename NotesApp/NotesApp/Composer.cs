@@ -9,6 +9,7 @@ using NotesApp.Abstractions;
 using NotesApp.Database;
 using NotesApp.Database.Configurations;
 using NotesApp.Extensions;
+using NotesApp.Options;
 using NotesApp.Politics;
 using NotesApp.Services;
 using Swashbuckle.AspNetCore.SwaggerGen;

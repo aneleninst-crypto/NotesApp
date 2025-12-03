@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
 using NotesApp.Contracts;
+using NotesApp.Contracts.AuthContracts;
+using NotesApp.Contracts.UserContracts;
 using NotesApp.Models;
 
 namespace NotesApp.Controllers;
@@ -52,7 +54,7 @@ public class UserController(IAuthService authService, IUserRepository userReposi
     public ActionResult<ListOfUsers> GetAllUsers()
     => Ok(userRepository.GetAllUsers());
     
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public ActionResult<User?> GetUserById(Guid id)
     => Ok(userRepository.GetUserById(id));
 
@@ -63,14 +65,14 @@ public class UserController(IAuthService authService, IUserRepository userReposi
         return Ok(user);
     }
     
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     public ActionResult UpdateUserLogin(Guid id, UpdateUserDto dto)
     {
         var login = userRepository.UpdateUserLogin(id, dto);
         return Ok(login);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public ActionResult DeleteUser(Guid id)
     {
         userRepository.DeleteUser(id);

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using NotesApp.Abstractions;
 using NotesApp.Database.Configurations;
 using NotesApp.Models;
+using NotesApp.Options;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace NotesApp.Services;
