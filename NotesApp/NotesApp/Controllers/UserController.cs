@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotesApp.Abstractions;
-using NotesApp.Contracts;
 using NotesApp.Contracts.AuthContracts;
 using NotesApp.Contracts.UserContracts;
 using NotesApp.Models;
@@ -16,66 +15,67 @@ public class UserController(IAuthService authService, IUserRepository userReposi
 
     [AllowAnonymous]
     [HttpPost("signup")]
-    public ActionResult<LogInResponse> SignUp([FromBody] CreateUserDto dto)
+    public async Task<ActionResult<LogInResponse>> SignUp([FromBody] CreateUserDto dto)
     {
-        var token = authService.SignUp(dto);
+        var token = await authService.SignUpAsync(dto);
         return Ok(token);
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public ActionResult<LogInResponse> LogIn([FromBody] LogInDto dto)
+    public async Task<ActionResult<LogInResponse>> LogIn([FromBody] LogInDto dto)
     {
-        var result = authService.LogIn(dto);
+        var result = await authService.LogInAsync(dto);
         if (result is null)
             return NotFound();
+        
         return Ok(result);
     }
 
     [HttpPost("logout")]
-    public ActionResult<bool> LogOut([FromBody] Guid userId)
+    public async Task<ActionResult<bool>> LogOut([FromBody] Guid userId)
     {
-        var result = authService.LogOut(userId);
+        var result = await authService.LogOutAsync(userId);
         if (!result)
             return NotFound();
         return Ok(result);
     }
 
     [HttpPost("refresh")]
-    public ActionResult<LogInResponse> Refresh([FromBody] string refreshToken)
+    public async Task<ActionResult<LogInResponse>> Refresh([FromBody] string refreshToken)
     {
-        var result = authService.Refresh(refreshToken);
+        var result = await authService.RefreshAsync(refreshToken);
         if (result is null)
             return NotFound();
         return Ok(result);
     }
     
     [HttpGet]
-    public ActionResult<ListOfUsers> GetAllUsers()
-    => Ok(userRepository.GetAllUsers());
+    public async Task<ActionResult<ListOfUsers>> GetAllUsers()
+    => Ok(await userRepository.GetAllUsersAsync());
     
     [HttpGet("{id:guid}")]
-    public ActionResult<User?> GetUserById(Guid id)
-    => Ok(userRepository.GetUserById(id));
+    public async Task<ActionResult<User?>> GetUserById(Guid id)
+    => Ok(await userRepository.GetUserByIdAsync(id));
 
     [HttpGet("by_login")]
-    public ActionResult<UserVm> GetUser(string login)
+    public async Task<ActionResult<UserVm>> GetUser(string login)
     {
-        var user = userRepository.GetUserByLogin(login);
+        var user = await userRepository.GetUserByLoginAsync(login);
         return Ok(user);
     }
     
     [HttpPut("{id:guid}")]
-    public ActionResult UpdateUserLogin(Guid id, UpdateUserDto dto)
+    public async Task<ActionResult> UpdateUserLogin(Guid id, UpdateUserDto dto)
     {
-        var login = userRepository.UpdateUserLogin(id, dto);
+        var login = await userRepository.UpdateUserLoginAsync(id, dto);
         return Ok(login);
     }
 
     [HttpDelete("{id:guid}")]
-    public ActionResult DeleteUser(Guid id)
+    public async Task<ActionResult> DeleteUser(Guid id)
     {
-        userRepository.DeleteUser(id);
+        await userRepository.DeleteUserAsync(id);
         return NoContent();
     }
 }

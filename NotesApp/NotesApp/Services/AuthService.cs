@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotesApp.Abstractions;
-using NotesApp.Contracts;
 using NotesApp.Contracts.AuthContracts;
 using NotesApp.Contracts.UserContracts;
 using NotesApp.Database;
@@ -13,67 +12,92 @@ public class AuthService(
     IJwtTokenGenerator jwtTokenGenerator
         ) : IAuthService
 {
-    public LogInResponse SignUp(CreateUserDto dto)
+    public async Task<LogInResponse> SignUpAsync(CreateUserDto dto)
     {
         var user = new User
         {
             Login = dto.Login,
             Password = dto.Password
         };
-        dbContext.Users.Add(user);
-        dbContext.SaveChanges();
+        
+        await dbContext.Users.AddAsync(user);
+       
+        await dbContext.SaveChangesAsync();
 
         var (jwt, refresh) = UpdateToken(user);
-        dbContext.SaveChanges();
+        
+        await dbContext.SaveChangesAsync();
+        
         return CreateResponse(jwt, refresh);
     }
 
-    public LogInResponse? LogIn(LogInDto dto)
+    public async Task<LogInResponse?> LogInAsync(LogInDto dto)
     {
-        var user = dbContext.Users.FirstOrDefault(u => u.Login == dto.Login);
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Login == dto.Login);
         if (user is null)
             return null;
+        
         if(user.Password != dto.Password)
             return null;
+        
         var (jwt, refresh) = UpdateToken(user);
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync(); 
+        
         return CreateResponse(jwt, refresh);
     }
 
-    public bool LogOut(Guid userId)
+    public async Task<bool> LogOutAsync(Guid userId)
     {
-        var user = dbContext.Users.FirstOrDefault(u => u.Id == userId);
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user is null)
             return false;
-        var token = dbContext.JwtTokens.FirstOrDefault(t => t.UserId == userId);
+        
+        var token = await dbContext.JwtTokens.FirstOrDefaultAsync(t => t.UserId == userId);
         if (token is null)
             return false;
         
         dbContext.Remove(token);
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
+        
         return true;
     }
 
-    public bool VerifyToken(Guid userId, string token)
+    public async Task<bool> VerifyTokenAsync(Guid userId, string token)
     {
-        var jwtToken = dbContext.JwtTokens.FirstOrDefault(t => t.UserId == userId);
+        var jwtToken = await dbContext.JwtTokens.FirstOrDefaultAsync(t => t.UserId == userId);
         if (jwtToken is null)
             return false;
         
         return jwtToken.Token == token && jwtToken.ExpiresAt > DateTime.UtcNow;
     }
 
-    public LogInResponse? Refresh(string refreshToken)
+    public async Task<LogInResponse?> RefreshAsync(string refreshToken)
     {
-        var existingRefreshToken = dbContext.RefreshTokens
+        var existingRefreshToken = await dbContext.RefreshTokens
             .Include(x => x.User)
-            .FirstOrDefault(x => x.Token == refreshToken && x.ExpiresAt > DateTime.UtcNow);
+            .FirstOrDefaultAsync(x => x.Token == refreshToken && x.ExpiresAt > DateTime.UtcNow);
+        
         if (existingRefreshToken is null)
             return null;
+        
         var (jwt, refresh) = UpdateToken(existingRefreshToken.User);
         
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
+        
         return CreateResponse(jwt, refresh);
+    }
+
+    public async Task RevokeAsync(string refreshToken)
+    {
+        var existingRefreshToken  = await dbContext.RefreshTokens
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Token == refreshToken && x.ExpiresAt > DateTime.UtcNow);
+        
+        if (existingRefreshToken is null)
+            return;
+        
+        dbContext.Remove(existingRefreshToken);
+        await dbContext.SaveChangesAsync();
     }
 
     private (JwtToken jwt, RefreshToken Refresh) UpdateToken(User user)

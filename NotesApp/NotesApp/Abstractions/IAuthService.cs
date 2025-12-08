@@ -5,9 +5,10 @@ namespace NotesApp.Abstractions;
 
 public interface IAuthService
 {
-    public LogInResponse SignUp(CreateUserDto dto);
-    public LogInResponse? LogIn(LogInDto dto);
-    public bool LogOut (Guid userId);
-    public bool VerifyToken (Guid userId, string token);
-    public LogInResponse? Refresh(string refreshToken);
+    public Task<LogInResponse> SignUpAsync(CreateUserDto dto);
+    public Task<LogInResponse?> LogInAsync(LogInDto dto);
+    public Task<bool> LogOutAsync (Guid userId);
+    public Task<bool> VerifyTokenAsync (Guid userId, string token);
+    public Task<LogInResponse?> RefreshAsync(string refreshToken);
+    public Task RevokeAsync (string refreshToken);
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NotesApp.Abstractions;
 using NotesApp.Contracts.NoteContracts;
 using NotesApp.Database;
@@ -13,10 +14,10 @@ public class NoteRepository(
     ApplicationDbContext dbContext
     ) : INoteRepository
 {
-    public ListOfNotes GetAllNote(Guid? userId, bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
+    public async Task<ListOfNotes> GetAllNoteAsync(Guid? userId, bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
         string? title, SortNotesBy? sortNotesBy)
     {
-        IEnumerable<Note> notes = dbContext.Notes.Where(n => n.UserId == userId);
+        IQueryable<Note> notes = dbContext.Notes.Where(n => n.UserId == userId);
         
         if (isCompleted.HasValue)
             notes = notes.Where(n => n.IsCompleted == isCompleted);
@@ -46,41 +47,48 @@ public class NoteRepository(
             
             _ => notes
         };
+        var result = await notes.ToListAsync();
         
-       return mapper.Map<ListOfNotes>(notes);
+        return mapper.Map<ListOfNotes>(result);
     }
 
-    public int CreateNote(CreateNoteDto createNoteDto,  Guid userId)
+    public async Task<int> CreateNoteAsync(CreateNoteDto createNoteDto,  Guid userId)
     {
         var note = createNoteDto.ToNote(userId);
-        dbContext.Notes.Add(note);
-        dbContext.SaveChanges();
+        await dbContext.Notes.AddAsync(note);
+        
+        await dbContext.SaveChangesAsync();
+        
         return note.Id;
     }
 
-    public bool UpdateNote (int noteId, UpdateNoteDto updateNoteDto)
+    public async Task<bool> UpdateNoteAsync (int noteId, UpdateNoteDto updateNoteDto)
     {
         var note = TryGetNoteByIdAndThrowIfNotFound(noteId);
         mapper.Map(updateNoteDto, note);
-        dbContext.SaveChanges();
+        
+        await dbContext.SaveChangesAsync();
+        
         return true;
     }
 
-    public bool DeleteNote(int noteId,  Guid? userId)
+    public async Task<bool> DeleteNoteAsync(int noteId,  Guid? userId)
     {
         var note = TryGetNoteByIdAndThrowIfNotFound(noteId);
         dbContext.Notes.Remove(note);
-        dbContext.SaveChanges();
+        
+        await dbContext.SaveChangesAsync();
+        
         return true;
     }
 
     private Note TryGetNoteByIdAndThrowIfNotFound(int noteId)
     {
         var note = dbContext.Notes.FirstOrDefault(n => n.Id == noteId);
+        
         if (note is null)
-        {
             throw new NoteNotFoundException(noteId);
-        }
+        
         return note;
     }
 }

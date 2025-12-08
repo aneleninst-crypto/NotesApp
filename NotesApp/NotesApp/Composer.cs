@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NotesApp.Abstractions;
 using NotesApp.Database;
-using NotesApp.Database.Configurations;
 using NotesApp.Extensions;
 using NotesApp.Options;
 using NotesApp.Politics;
@@ -90,7 +89,7 @@ public static class Composer
                 };
                 options.Events = new JwtBearerEvents
                 {
-                    OnTokenValidated = context =>
+                    OnTokenValidated = async context =>
                     {
                         var authService =
                             context.HttpContext
@@ -98,16 +97,23 @@ public static class Composer
                                 .GetRequiredService<IAuthService>();
 
                         var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var isValid = false;
+                        if (userId is not null)
+                        {
+                            isValid = await authService.VerifyTokenAsync(
+                                Guid.Parse(userId),
+                                context.SecurityToken.UnsafeToString()
+                            );
+                        }
+
                         if (
                             userId is null
                             || context.SecurityToken.ValidTo < DateTime.UtcNow
-                            || !authService.VerifyToken(Guid.Parse(userId),
-                                context.SecurityToken.UnsafeToString()))
+                            || !isValid
+                        )
                         {
                             context.Fail("Unauthorized");
                         }
-
-                        return Task.CompletedTask;
                     }
                 };
             });

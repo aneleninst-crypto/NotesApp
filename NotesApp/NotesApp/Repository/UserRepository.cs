@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NotesApp.Abstractions;
-using NotesApp.Contracts;
 using NotesApp.Contracts.UserContracts;
 using NotesApp.Database;
 using NotesApp.Exceptions;
@@ -12,47 +12,56 @@ public class UserRepository(
     IMapper mapper,
     ApplicationDbContext dbContext) : IUserRepository
 {
-    public ListOfUsers GetAllUsers()
-    => mapper.Map<ListOfUsers>(dbContext.Users.ToList());
-
-    public string UpdateUserLogin(Guid id,UpdateUserDto dto)
+    public async Task<ListOfUsers> GetAllUsersAsync()
     {
-        var user = TryGetUserByIdAndThrowIfNotFound(id);
+        var users = await dbContext.Users.ToListAsync();
+        
+        return mapper.Map<ListOfUsers>(users);
+    }
+
+    public async Task<string> UpdateUserLoginAsync(Guid id,UpdateUserDto dto)
+    {
+        var user = await TryGetUserByIdAndThrowIfNotFoundAsync(id);
         user.Login = dto.Login;
-        dbContext.SaveChanges();
+        
+        await dbContext.SaveChangesAsync();
+        
         return user.Login;
     }
 
-    public void DeleteUser(Guid id)
+    public async Task DeleteUserAsync(Guid id)
     {
-        var  user = TryGetUserByIdAndThrowIfNotFound(id);
+        var  user = await TryGetUserByIdAndThrowIfNotFoundAsync(id);
+        
         dbContext.Remove(user);
-        dbContext.SaveChanges();
+        
+        await dbContext.SaveChangesAsync();
     }
 
-    public UserVm GetUserById(Guid id)
+    public async Task<UserVm> GetUserByIdAsync(Guid id)
     {
-        var user = TryGetUserByIdAndThrowIfNotFound(id);
+        var user = await TryGetUserByIdAndThrowIfNotFoundAsync(id);
+        
         return mapper.Map<UserVm>(user);
     }
 
-    public UserVm GetUserByLogin(string login)
+    public async Task<UserVm> GetUserByLoginAsync(string login)
     {
-        var user = dbContext.Users.FirstOrDefault(n => n.Login == login);
+        var user = await dbContext.Users.FirstOrDefaultAsync(n => n.Login == login);
+        
         if (user is null)
-        {
             throw new UserNotFoundByLoginException(login);
-        }
+        
         return mapper.Map<UserVm>(user);
     }
 
-    private User TryGetUserByIdAndThrowIfNotFound(Guid id)
+    private async Task<User> TryGetUserByIdAndThrowIfNotFoundAsync(Guid id)
     {
-        var user = dbContext.Users.FirstOrDefault(n => n.Id == id);
+        var user = await dbContext.Users.FirstOrDefaultAsync(n => n.Id == id);
+        
         if (user is null)
-        {
             throw new UserNotFoundExceptionId(id);
-        }
+        
         return user;
     }
 }

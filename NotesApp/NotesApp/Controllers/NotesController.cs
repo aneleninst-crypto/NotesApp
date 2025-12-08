@@ -14,47 +14,44 @@ public class NotesController(INoteRepository noteRepository) : BaseController
 {
 
     [HttpGet]
-    public ActionResult<ListOfNotes> GetAllNotes(bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
+    public async Task<ActionResult<ListOfNotes>> GetAllNotes(bool? isCompleted, PriorityOfExecution? priorityOfExecution, 
         string? title, SortNotesBy? sortNotesBy)
     {
         var userId = GetUserId();
-        var notes = noteRepository.GetAllNote(userId, isCompleted, priorityOfExecution, title, sortNotesBy);
+        var notes = await noteRepository.GetAllNoteAsync(userId, isCompleted, priorityOfExecution, title, sortNotesBy);
         return Ok(notes);
     }
 
     [HttpPost]
-    public ActionResult<NoteVm> CreateNote([FromBody] CreateNoteDto dto)
+    public async Task<ActionResult<NoteVm>> CreateNote([FromBody] CreateNoteDto dto)
     {
         var userId = GetUserId();
-        var note = noteRepository.CreateNote(dto, userId!.Value);
+        var note = await noteRepository.CreateNoteAsync(dto, userId!.Value);
         return Ok(note);
     }
 
     [HttpPut]
-    public ActionResult<bool> UpdateNoteDto(int noteId, UpdateNoteDto dto)
+    public async Task<ActionResult<bool>> UpdateNoteDto(int noteId, UpdateNoteDto dto)
     {
-        var result = noteRepository.UpdateNote(noteId, dto);
+        var result = await noteRepository.UpdateNoteAsync(noteId, dto);
         if (!result)
-        {
             return BadRequest("Failed to update note");
-        }
+        
         return Ok("Note changed!");
     }
     
     [Authorize(Policy = "NotesOwner")]
     [HttpDelete("{id:int}")]
-    public ActionResult<bool> DeleteNote(int id)
+    public async Task<ActionResult<bool>> DeleteNote(int id)
     {
         var userId = GetUserId();
-        noteRepository.DeleteNote(id, userId);
+        await noteRepository.DeleteNoteAsync(id, userId);
         return NoContent();
     }
 
     private Guid? GetUserId()
     {
         var userId = HttpContext.ExtractUserIdFromClaims();
-        if (userId is null)
-            throw new UnauthorizedAccessException();
-        return userId;
+        return userId ?? throw new UnauthorizedAccessException();
     }
 }
